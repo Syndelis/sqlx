@@ -29,6 +29,7 @@
 #[macro_use]
 extern crate sqlx_core;
 
+use std::env;
 use std::sync::atomic::AtomicBool;
 
 pub use arguments::{SqliteArgumentValue, SqliteArguments};
@@ -107,7 +108,14 @@ pub static CREATE_DB_WAL: AtomicBool = AtomicBool::new(true);
 /// UNSTABLE: for use by `sqlite-macros-core` only.
 #[doc(hidden)]
 pub fn describe_blocking(query: &str, database_url: &str) -> Result<Describe<Sqlite>, Error> {
-    let opts: SqliteConnectOptions = database_url.parse()?;
+    let mut opts: SqliteConnectOptions = database_url.parse()?;
+
+    if let Ok(comma_separated_exts) = env::var("SQLX_SQLITE_EXTENSIONS") {
+        comma_separated_exts
+            .split(',')
+            .for_each(|ext| opts.add_extension(ext.to_owned()));
+    }
+
     let params = EstablishParams::from_options(&opts)?;
     let mut conn = params.establish()?;
 

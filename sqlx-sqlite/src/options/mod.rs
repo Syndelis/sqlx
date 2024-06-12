@@ -438,6 +438,10 @@ impl SqliteConnectOptions {
         self
     }
 
+    pub(super) fn add_extension(&mut self, extension_name: impl Into<Cow<'static, str>>) {
+        self.extensions.insert(extension_name.into(), None);
+    }
+
     /// Load an [extension](https://www.sqlite.org/loadext.html) at run-time when the database connection
     /// is established, using the default entry point.
     ///
@@ -458,7 +462,7 @@ impl SqliteConnectOptions {
     /// # }
     /// ```
     pub fn extension(mut self, extension_name: impl Into<Cow<'static, str>>) -> Self {
-        self.extensions.insert(extension_name.into(), None);
+        self.add_extension(extension_name);
         self
     }
 
